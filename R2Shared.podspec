@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
   s.source_files  = "r2-shared-swift/**/*.{m,h,swift}"
   s.platform     = :ios
   s.ios.deployment_target = "10.0"
+  s.swift_version = '5.0'
   s.frameworks   = 'MobileCoreServices'
   
 end
