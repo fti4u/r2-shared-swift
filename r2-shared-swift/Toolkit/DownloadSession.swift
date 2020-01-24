@@ -48,24 +48,56 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
     public static let shared = DownloadSession()
     private override init() { super.init() }
     
-    private lazy var session: URLSession = {
+    public lazy var session: URLSession = {
         let config = URLSessionConfiguration.background(withIdentifier: "org.readium.r2-shared.DownloadSession")
         return URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
     } ()
     
     public var displayDelegate:DownloadDisplayDelegate?
     private var taskMap = [URLSessionTask: Download]()
-    
+    public var activeDownloads: [URL: URLSessionDownloadTask] = [ : ]
+
     /// Returns: an observable download progress value, from 0.0 to 1.0
     @discardableResult
     public func launch(request: URLRequest, description: String?, completionHandler: CompletionHandler?) -> Observable<DownloadProgress> {
-        let task = self.session.downloadTask(with: request); task.resume()
         let download = Download(completion: completionHandler ?? { _, _, _, _ in return true })
-        self.taskMap[task] = download
+        var exists = false
+        self.session.getAllTasks { tasks in
+          let task = tasks
+            .filter { $0.state == .running }
+            .filter { $0.originalRequest?.url == request.url }.first
+          if task != nil {
+            task?.resume()
+            self.taskMap[task!] = download
+            self.activeDownloads[request.url!] = task! as? URLSessionDownloadTask
+            DispatchQueue.main.async {
+                let localizedDescription = description ?? "..."
+              self.displayDelegate?.didStartDownload(task: task as! URLSessionDownloadTask, description: localizedDescription)
+            }
+            exists = true
+          }
+        }
 
-        DispatchQueue.main.async {
-            let localizedDescription = description ?? "..."
-            self.displayDelegate?.didStartDownload(task: task, description: localizedDescription)
+        if (!exists) {
+          if let downloadTask = activeDownloads[request.url!]  {
+            downloadTask.resume()
+            self.taskMap[downloadTask] = download
+            self.activeDownloads[request.url!] = downloadTask
+            DispatchQueue.main.async {
+                let localizedDescription = description ?? "..."
+                self.displayDelegate?.didStartDownload(task: downloadTask, description: localizedDescription)
+            }
+          }
+          else {
+            let task = self.session.downloadTask(with: request);
+            task.resume()
+            self.taskMap[task] = download
+            self.activeDownloads[request.url!] = task
+            DispatchQueue.main.async {
+                let localizedDescription = description ?? "..."
+                self.displayDelegate?.didStartDownload(task: task, description: localizedDescription)
+            }
+          }
         }
         
         return download.progress
@@ -92,7 +124,8 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
         
         DispatchQueue.main.async {
             self.taskMap.removeValue(forKey: downloadTask)
-            
+            self.activeDownloads[downloadTask.originalRequest!.url!] = nil
+
             if done ?? false {
                 self.displayDelegate?.didFinishDownload(task: downloadTask)
             } else {
@@ -125,7 +158,8 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
             guard let theError = error else {return}
             _ = self.taskMap[task]?.completion(nil, nil, error, downloadTask)
             self.taskMap.removeValue(forKey: task)
-            
+            self.activeDownloads[downloadTask.originalRequest!.url!] = nil
+
             self.displayDelegate?.didFailWithError(task: downloadTask, error: theError)
         }
     }
