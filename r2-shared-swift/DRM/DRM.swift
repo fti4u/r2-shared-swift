@@ -22,17 +22,21 @@ public struct DRM {
 
     public enum Brand: String {
         case lcp
+        case adobe
     }
 
     public enum Scheme: String {
         case lcp = "http://readium.org/2014/01/lcp"
+        case adobe = "http://ns.adobe.com/adept"
     }
 
     public init(brand: Brand) {
         self.brand = brand
         switch brand {
         case .lcp:
-            scheme = .lcp
+          scheme = .lcp
+        case .adobe:
+          scheme = .adobe
         }
     }
 }
@@ -46,7 +50,7 @@ public protocol DRMLicense {
     var encryptionProfile: String? { get }
 
     /// Depichers the given encrypted data to be displayed in the reader.
-    func decipher(_ data: Data) throws -> Data?
+    func decipher(_ data: Data, _ link:Link) throws -> Data?
 
     /// Returns whether the user can copy extracts from the publication.
     var canCopy: Bool { get }
