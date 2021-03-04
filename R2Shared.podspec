@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   
   s.name         = 'R2Shared'
-  s.version      = '1.4.5'
+  s.version      = '2.0.0'
   s.license      = 'BSD 3-Clause License'
   s.summary      = 'R2 Shared'
-  s.homepage     = 'https://github.com/d-i-t-a/r2-shared-swift/'
-  s.author       = { "Aferdita Muriqi" => "aferdita.muriqi@gmail.com" }
-  s.source       = { :git => 'https://github.com/d-i-t-a/r2-shared-swift.git', :tag => '1.4.5' }
+  s.homepage     = 'https://github.com/fti4u/r2-shared-swift/'
+  s.author       = { "Taras Filipovych" => "filipovychtaras@gmail.com" }
+  s.source       = { :git => 'https://github.com/fti4u/r2-shared-swift.git', :tag => '2.0.0' }
   s.exclude_files = ["**/Info*.plist"]
   s.requires_arc = true
   s.resources    = ['r2-shared-swift/Resources/**']
