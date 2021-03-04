@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   
-  s.name         = 'R2Shared'
-  s.version      = '2.0.1'
+  s.name         = 'R2BShared'
+  s.version      = '2.0.2'
   s.license      = 'BSD 3-Clause License'
-  s.summary      = 'R2 Shared'
+  s.summary      = 'R2BShared'
   s.homepage     = 'https://github.com/fti4u/r2-shared-swift/'
   s.author       = { "Taras Filipovych" => "filipovychtaras@gmail.com" }
-  s.source       = { :git => 'https://github.com/fti4u/r2-shared-swift.git', :tag => '2.0.1' }
+  s.source       = { :git => 'https://github.com/fti4u/r2-shared-swift.git', :tag => '2.0.2' }
 
 
   s.dependency 'Fuzi'
