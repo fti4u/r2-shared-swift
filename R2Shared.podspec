@@ -7,6 +7,12 @@ Pod::Spec.new do |s|
   s.homepage     = 'https://github.com/fti4u/r2-shared-swift/'
   s.author       = { "Taras Filipovych" => "filipovychtaras@gmail.com" }
   s.source       = { :git => 'https://github.com/fti4u/r2-shared-swift.git', :tag => '2.0.0' }
+
+
+  s.dependency 'Fuzi'
+  s.dependency 'Minizip'
+  s.dependency 'ZIPFoundation'
+
   s.exclude_files = ["**/Info*.plist"]
   s.requires_arc = true
   s.resources    = ['r2-shared-swift/Resources/**']
