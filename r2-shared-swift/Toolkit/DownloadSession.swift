@@ -60,6 +60,13 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
     /// Returns: an observable download progress value, from 0.0 to 1.0
     @discardableResult
     public func launch(request: URLRequest, description: String?, completionHandler: CompletionHandler?) -> Observable<DownloadProgress> {
+        launchTask(request: request, description: description, completionHandler: completionHandler).progress
+    }
+    
+    @discardableResult
+    public func launchTask(request: URLRequest, description: String?, completionHandler: CompletionHandler?) -> (task: URLSessionDownloadTask, progress: Observable<DownloadProgress>) {
+        let task = self.session.downloadTask(with: request)
+        task.resume()
         let download = Download(completion: completionHandler ?? { _, _, _, _ in return true })
         var exists = false
         self.session.getAllTasks { tasks in
@@ -100,9 +107,9 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
           }
         }
         
-        return download.progress
+        return (task, download.progress)
     }
-    
+        
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         let done: Bool?
         let download = taskMap[downloadTask]
@@ -117,7 +124,7 @@ public class DownloadSession: NSObject, URLSessionDelegate, URLSessionDownloadDe
                 .appendingPathExtension(location.pathExtension)
             
             try FileManager.default.moveItem(at: location, to: tempURL)
-            done = download?.completion(tempURL, nil, nil, downloadTask)
+            done = download?.completion(tempURL, response, nil, downloadTask)
         } catch {
             done = download?.completion(nil, nil, error, downloadTask)
         }
